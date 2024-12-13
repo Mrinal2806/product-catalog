@@ -5,6 +5,7 @@ import com.example.productcatalog.models.Category;
 import com.example.productcatalog.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,14 +17,18 @@ public class FakeStoreProductService implements IProductService {
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
 
-//    public FakeStoreProductService(RestTemplateBuilder restTemplateBuilder) {
-//        this.restTemplateBuilder = restTemplateBuilder;
-//    }
+    //    public FakeStoreProductService(RestTemplateBuilder restTemplateBuilder) {
+    //        this.restTemplateBuilder = restTemplateBuilder;
+    //    }
 
     public Product getProductById(Long productId) {
         RestTemplate restTemplate = restTemplateBuilder.build();
-        FakeStoreProductDto fakeStoreProductDto = restTemplate.getForEntity("http://fakestoreapi.com/products/{productId}", FakeStoreProductDto.class, productId).getBody();
-        return from(fakeStoreProductDto);
+        ResponseEntity<FakeStoreProductDto>  fakeStoreProductDtoResponseEntity = restTemplate.getForEntity("http://fakestoreapi.com/products/{productId}", FakeStoreProductDto.class, productId);
+
+        if(fakeStoreProductDtoResponseEntity.getStatusCode().is2xxSuccessful() && fakeStoreProductDtoResponseEntity.getBody() != null) {
+            return from(fakeStoreProductDtoResponseEntity.getBody());
+        }
+        return null;
     };
 
     private Product from(FakeStoreProductDto fakeStoreProductDto) {

@@ -29,9 +29,10 @@ public class ProductController {
     @GetMapping("/{productId}")
     public ProductDto findProductById(@PathVariable Long productId) {
         //        Product product = new Product();
-//        product.setId(productId);
-//        return product;
+        //        product.setId(productId);
+        //        return product;
         Product product = productService.getProductById(productId);
+        if (product == null) return null;
         return from(product);
 
     };
