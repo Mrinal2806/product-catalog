@@ -1,0 +1,3 @@
+13 Dec
+   1. implement create product API with fake store
+   2. add headers in the response of getProductById
