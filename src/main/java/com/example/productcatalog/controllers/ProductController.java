@@ -46,17 +46,20 @@ public class ProductController {
 
         //        HttpHeaders headers = new HttpHeaders();
         //        headers.add("Custom-Header", "HeaderValue");
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("called by", "intelligent");
+        try {
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add("called by", "intelligent");
 
-        if(productId <= 0) {
-            return new ResponseEntity<>(null, headers, HttpStatus.NOT_FOUND);
+            if (productId <= 0) {
+                throw new IllegalArgumentException("Please enter a valid product id");
+            }
+            Product product = productService.getProductById(productId);
+            if (product == null) return new ResponseEntity<>(null, headers, HttpStatus.BAD_REQUEST);
+
+            return new ResponseEntity<>(from(product), headers, HttpStatus.OK);
+        }catch (IllegalArgumentException exception) {
+            throw exception;
         }
-        Product product = productService.getProductById(productId);
-        if (product == null) return new ResponseEntity<>(null, headers,HttpStatus.BAD_REQUEST);
-
-        return new ResponseEntity<>(from(product), headers, HttpStatus.OK);
-
     };
 
     private ProductDto from (Product product) {

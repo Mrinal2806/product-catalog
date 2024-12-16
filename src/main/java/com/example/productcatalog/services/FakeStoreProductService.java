@@ -1,5 +1,6 @@
 package com.example.productcatalog.services;
 
+import com.example.productcatalog.clients.FakeStoreApiClient;
 import com.example.productcatalog.dtos.FakeStoreProductDto;
 import com.example.productcatalog.models.Category;
 import com.example.productcatalog.models.Product;
@@ -16,7 +17,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class FakeStoreProductService implements IProductService {
@@ -24,19 +24,26 @@ public class FakeStoreProductService implements IProductService {
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
 
-    //    public FakeStoreProductService(RestTemplateBuilder restTemplateBuilder) {
-    //        this.restTemplateBuilder = restTemplateBuilder;
-    //    }
+    @Autowired
+    private FakeStoreApiClient fakeStoreApiClient;
 
     public Product getProductById(Long productId) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<FakeStoreProductDto>  fakeStoreProductDtoResponseEntity = restTemplate.getForEntity("http://fakestoreapi.com/products/{productId}", FakeStoreProductDto.class, productId);
+        FakeStoreProductDto fakeStoreProductDto = fakeStoreApiClient.getProductById(productId);
+        return from(fakeStoreProductDto);
+    }
 
-        if(fakeStoreProductDtoResponseEntity.getStatusCode().is2xxSuccessful() && fakeStoreProductDtoResponseEntity.getBody() != null) {
-            return from(fakeStoreProductDtoResponseEntity.getBody());
-        }
-        return null;
-    };
+    private Product from(FakeStoreProductDto fakeStoreProductDto) {
+        Product product = new Product();
+        product.setId(fakeStoreProductDto.getId());
+        product.setName(fakeStoreProductDto.getTitle());
+        product.setDescription(fakeStoreProductDto.getDescription());
+        product.setPrice(fakeStoreProductDto.getPrice());
+        product.setImageUrl(fakeStoreProductDto.getImage());
+        Category category = new Category();
+        category.setName(fakeStoreProductDto.getCategory());
+        product.setCategory(category);
+        return product;
+    }
 
     public List<Product> getAllProducts() {
         RestTemplate restTemplate = restTemplateBuilder.build();
@@ -91,17 +98,6 @@ public class FakeStoreProductService implements IProductService {
         return restTemplate.execute(url, httpMethod, requestCallback, responseExtractor, uriVariables);
     }
 
-    private Product from(FakeStoreProductDto fakeStoreProductDto) {
-        Product product = new Product();
-        product.setId(fakeStoreProductDto.getId());
-        product.setName(fakeStoreProductDto.getTitle());
-        product.setDescription(fakeStoreProductDto.getDescription());
-        product.setPrice(fakeStoreProductDto.getPrice());
-        product.setImageUrl(fakeStoreProductDto.getImage());
-        Category category = new Category();
-        category.setName(fakeStoreProductDto.getCategory());
-        product.setCategory(category);
-        return product;
-    }
+
 
 }
